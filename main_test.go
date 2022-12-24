@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Api_Go_Gin/controllers"
+	"github.com/Api_Go_Gin/db"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
@@ -28,4 +29,15 @@ func TestVerificaStatusCodeDaSaudacaoComParametro(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, resposta.Code, "Deveriam ser iguais!") // Aqui substituimos todo o "if" utilizado anteriormente pelo o "assert" que importamos com o comando:"go get github.com/stretchr/testify". O Equal é para sabermos se é igual, passamos também nossa instância de teste "t", agora passamos o valor esperado através do "http.StatusOK" e o valor recebido pelo "resposta.code" e para finalizar passamos uma mensagem de error.
 
+}
+
+func TestListandoTodosOsAlunosHandle(t *testing.T) {
+	db.ConectaComBancoDeDados()
+	r := SetupDasRotasDeTeste()
+	r.GET("/alunos", controllers.ExibeTodosAlunos)
+	req, _ := http.NewRequest("GET", "/alunos", nil)
+	resposta := httptest.NewRecorder()
+	r.ServeHTTP(resposta, req)
+	assert.Equal(t, http.StatusOK, resposta.Code, "Deveria ser igual")
+	/*fmt.Println(resposta.Body) //Aqui utilizo esse comando para verificar se realmente estou acessand o banco de dados de nossa  aplicação.*/
 }
