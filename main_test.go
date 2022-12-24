@@ -7,13 +7,29 @@ import (
 
 	"github.com/Api_Go_Gin/controllers"
 	"github.com/Api_Go_Gin/db"
+	"github.com/Api_Go_Gin/models"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
+var ID int //Como queremos que o "ID" seja visto por outras classes, fizemos a declaração dele aqui para todo o código.
+
 func SetupDasRotasDeTeste() *gin.Engine {
+	gin.SetMode(gin.ReleaseMode) //Este Set melhora a visualização das respostas de nossos testes.
 	rotas := gin.Default()
 	return rotas
+}
+
+// Aqui definimos a criação e o delete de um aluno exemplo para que apareça e seja deletado dentro de nossas funções que atuam com nosso banco de dados.
+func CriaAlunoMock() {
+	aluno := models.Aluno{Nome: "Nome do Aluno Testes", CPF: "12312345689", RG: "1231237"}
+	db.DB.Create(&aluno)
+	ID = int(aluno.ID) //Por ter sido declarado para todo o código não há a necessidade de colocar os " : ".
+}
+
+func DeletaAlunoMock() {
+	var aluno models.Aluno
+	db.DB.Delete(&aluno, ID)
 }
 
 func TestVerificaStatusCodeDaSaudacaoComParametro(t *testing.T) {
@@ -33,11 +49,25 @@ func TestVerificaStatusCodeDaSaudacaoComParametro(t *testing.T) {
 
 func TestListandoTodosOsAlunosHandle(t *testing.T) {
 	db.ConectaComBancoDeDados()
+	CriaAlunoMock()         //Aqui criamos um aluno mock
+	defer DeletaAlunoMock() //Aqui deletamos o aluno mock
 	r := SetupDasRotasDeTeste()
 	r.GET("/alunos", controllers.ExibeTodosAlunos)
 	req, _ := http.NewRequest("GET", "/alunos", nil)
 	resposta := httptest.NewRecorder()
 	r.ServeHTTP(resposta, req)
 	assert.Equal(t, http.StatusOK, resposta.Code, "Deveria ser igual")
-	/*fmt.Println(resposta.Body) //Aqui utilizo esse comando para verificar se realmente estou acessand o banco de dados de nossa  aplicação.*/
+	/*fmt.Println(resposta.Body) //Aqui utilizamos esse comando para verificar se realmente estou acessand o banco de dados de nossa  aplicação.*/
+}
+
+func TestBuscaAlunoPorCPFHandle(t *testing.T) {
+	db.ConectaComBancoDeDados()
+	CriaAlunoMock()
+	defer DeletaAlunoMock()
+	r := SetupDasRotasDeTeste()
+	r.GET("/alunos/cpf/:cpf", controllers.BuscaAlunoPorCPF)
+	req, _ := http.NewRequest("GET", "/alunos/cpf/11122233389", nil)
+	resposta := httptest.NewRecorder()
+	r.ServeHTTP(resposta, req)
+	assert.Equal(t, http.StatusOK, resposta.Code, "Deveria ser igual")
 }
