@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/Api_Go_Gin/controllers"
@@ -69,5 +71,24 @@ func TestBuscaAlunoPorCPFHandle(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/alunos/cpf/12332132189", nil) //importante colocar um CPF válido, um CPF que conste no banco de dados do projeto.
 	resposta := httptest.NewRecorder()
 	r.ServeHTTP(resposta, req)
+	assert.Equal(t, http.StatusOK, resposta.Code, "Deveria ser igual")
+}
+
+func TestBuscaAlunoPorIdHandle(t *testing.T) {
+	db.ConectaComBancoDeDados()
+	CriaAlunoMock()
+	defer DeletaAlunoMock()
+	r := SetupDasRotasDeTeste()
+	r.GET("/alunos/:id", controllers.BuscaAlunoPorId)
+	pathDaBusca := "/alunos/" + strconv.Itoa(ID)
+	req, _ := http.NewRequest("GET", pathDaBusca, nil)
+	resposta := httptest.NewRecorder()
+	r.ServeHTTP(resposta, req)
+	var AlunoMock models.Aluno
+	json.Unmarshal(resposta.Body.Bytes(), &AlunoMock)
+	//fmt.Println(AlunoMock.Nome)
+	assert.Equal(t, "Nome do aluno teste", AlunoMock.Nome, "Os nomes deveriam ser iguais")
+	assert.Equal(t, "12332132189", AlunoMock.CPF, "Os CPFs deveriam ser iguais")
+	assert.Equal(t, "1231237", AlunoMock.RG, "Os RGs deveriam ser iguais ")
 	assert.Equal(t, http.StatusOK, resposta.Code, "Deveria ser igual")
 }
