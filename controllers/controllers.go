@@ -85,3 +85,7 @@ func ExibePaginaIndex(c *gin.Context) {
 	})
 
 }
+
+func RotaNaoEcontrada(c *gin.Context) {
+	c.HTML(http.StatusFound, "404.html", nil)
+}
