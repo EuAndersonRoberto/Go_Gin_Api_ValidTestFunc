@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -103,5 +104,23 @@ func TestDeleteAlunoHandle(t *testing.T) {
 	resposta := httptest.NewRecorder()
 	r.ServeHTTP(resposta, req)
 	assert.Equal(t, http.StatusOK, resposta.Code)
+}
 
+func TestEditaUmAlunoGHandle(t *testing.T) {
+	db.ConectaComBancoDeDados()
+	CriaAlunoMock()
+	defer DeletaAlunoMock()
+	r := SetupDasRotasDeTeste()
+	r.PATCH("/alunos/:id", controllers.AtualizaAluno)
+	aluno := models.Aluno{Nome: "Nome do Aluno Testes", CPF: "412312345689", RG: "123123700"}
+	valorjson, _ := json.Marshal(aluno)
+	pathParaEditar := "/alunos/" + strconv.Itoa(ID)
+	req, _ := http.NewRequest("PATCH", pathParaEditar, bytes.NewBuffer(valorjson)) // Aqui passamos um valor para o corpo da requição mas, não podemos passar essa informação em forma de JSON direto, para isso utilizamos o "bytes.NewBuffer()" e colocamos nosso JSON "valorjson"
+	resposta := httptest.NewRecorder()
+	r.ServeHTTP(resposta, req)
+	var alunoMockAtualizado models.Aluno
+	json.Unmarshal(resposta.Body.Bytes(), &alunoMockAtualizado) //Aqui pegamos todo o body da resposta e colocamos no "alunoMockAtualizado", nos possibilitando fazer nossas verificações.
+	assert.Equal(t, "412312345689", alunoMockAtualizado.CPF)
+	assert.Equal(t, "123123700", alunoMockAtualizado.RG)
+	assert.Equal(t, "Nome do Aluno Testes", alunoMockAtualizado.Nome)
 }
