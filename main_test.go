@@ -69,7 +69,7 @@ func TestBuscaAlunoPorCPFHandle(t *testing.T) {
 	defer DeletaAlunoMock()
 	r := SetupDasRotasDeTeste()
 	r.GET("/alunos/cpf/:cpf", controllers.BuscaAlunoPorCPF)
-	req, _ := http.NewRequest("GET", "/alunos/cpf/12332132189", nil) //importante colocar um CPF válido, um CPF que conste no banco de dados do projeto.
+	req, _ := http.NewRequest("GET", "/alunos/cpf/12312345689", nil) //importante colocar um CPF válido, um CPF que conste no banco de dados do projeto.
 	resposta := httptest.NewRecorder()
 	r.ServeHTTP(resposta, req)
 	assert.Equal(t, http.StatusOK, resposta.Code, "Deveria ser igual")
@@ -85,12 +85,12 @@ func TestBuscaAlunoPorIdHandle(t *testing.T) {
 	req, _ := http.NewRequest("GET", pathDaBusca, nil)
 	resposta := httptest.NewRecorder()
 	r.ServeHTTP(resposta, req)
-	var AlunoMock models.Aluno
-	json.Unmarshal(resposta.Body.Bytes(), &AlunoMock)
+	var alunoMock models.Aluno
+	json.Unmarshal(resposta.Body.Bytes(), &alunoMock)
 	//fmt.Println(AlunoMock.Nome)
-	assert.Equal(t, "Nome do aluno teste", AlunoMock.Nome, "Os nomes deveriam ser iguais")
-	assert.Equal(t, "12332132189", AlunoMock.CPF, "Os CPFs deveriam ser iguais")
-	assert.Equal(t, "1231237", AlunoMock.RG, "Os RGs deveriam ser iguais ")
+	assert.Equal(t, "Nome do Aluno Testes", alunoMock.Nome, "Os nomes deveriam ser iguais")
+	assert.Equal(t, "12312345689", alunoMock.CPF, "Os CPFs deveriam ser iguais")
+	assert.Equal(t, "1231237", alunoMock.RG, "Os RGs deveriam ser iguais ")
 	assert.Equal(t, http.StatusOK, resposta.Code, "Deveria ser igual")
 }
 
@@ -100,7 +100,7 @@ func TestDeleteAlunoHandle(t *testing.T) {
 	r := SetupDasRotasDeTeste()
 	r.DELETE("/alunos/:id", controllers.DeleteAluno)
 	pathDeBusca := "/alunos/" + strconv.Itoa(ID)
-	req, _ := http.NewRequest("Delete", pathDeBusca, nil)
+	req, _ := http.NewRequest("DELETE", pathDeBusca, nil)
 	resposta := httptest.NewRecorder()
 	r.ServeHTTP(resposta, req)
 	assert.Equal(t, http.StatusOK, resposta.Code)
